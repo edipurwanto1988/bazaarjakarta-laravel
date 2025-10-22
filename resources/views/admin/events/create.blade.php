@@ -115,12 +115,37 @@
                             Description
                         </span>
                     </label>
-                    <div id="description-editor">
-                        <textarea name="description"
-                                  id="description"
-                                  class="hidden"
-                                  placeholder="Describe the event...">{{ old('description') }}</textarea>
+                    
+                    <!-- Editor Mode Toggle -->
+                    <div class="btn-group mb-2">
+                        <button type="button" id="visualModeBtn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye mr-1"></i> Visual
+                        </button>
+                        <button type="button" id="htmlModeBtn" class="btn btn-sm">
+                            <i class="fas fa-code mr-1"></i> HTML Code
+                        </button>
                     </div>
+                    
+                    <!-- Visual Editor -->
+                    <div id="visualEditor">
+                        <div id="description-editor">
+                            <textarea name="description"
+                                      id="description"
+                                      class="hidden"
+                                      placeholder="Describe the event...">{{ old('description') }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- HTML Code Editor -->
+                    <div id="htmlEditor" class="hidden">
+                        <textarea id="htmlCodeEditor"
+                                  class="textarea textarea-bordered w-full h-64 font-mono text-sm"
+                                  placeholder="Enter HTML code...">{{ old('description') }}</textarea>
+                    </div>
+                    
+                    <label class="label">
+                        <span class="label-text-alt text-xs">Optional: Detailed description of the event with rich text formatting</span>
+                    </label>
                     @error('description')
                     <label class="label">
                         <span class="label-text-alt text-error flex items-center gap-1">
@@ -459,6 +484,14 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
+    // Editor mode toggle functionality
+    const visualModeBtn = document.getElementById('visualModeBtn');
+    const htmlModeBtn = document.getElementById('htmlModeBtn');
+    const visualEditor = document.getElementById('visualEditor');
+    const htmlEditor = document.getElementById('htmlEditor');
+    const htmlCodeEditor = document.getElementById('htmlCodeEditor');
+    let ckEditorInstance = null;
+
     // Initialize CKEditor for description
     ClassicEditor
         .create(document.querySelector('#description-editor'), {
@@ -474,23 +507,66 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .then(editor => {
             // Store the editor instance
+            ckEditorInstance = editor;
             window.descriptionEditor = editor;
             
             // Set initial content
             const initialContent = document.getElementById('description').value;
             if (initialContent) {
                 editor.setData(initialContent);
+                htmlCodeEditor.value = initialContent;
             }
             
-            // Update the hidden textarea when content changes
+            // Update the hidden textarea and HTML editor when content changes
             editor.model.document.on('change:data', () => {
                 const content = editor.getData();
                 document.getElementById('description').value = content;
+                htmlCodeEditor.value = content;
             });
         })
         .catch(error => {
             console.error(error);
         });
+
+    // Toggle to Visual mode
+    visualModeBtn.addEventListener('click', function() {
+        visualModeBtn.classList.add('btn-primary');
+        visualModeBtn.classList.remove('btn-ghost');
+        htmlModeBtn.classList.remove('btn-primary');
+        htmlModeBtn.classList.add('btn-ghost');
+        
+        visualEditor.classList.remove('hidden');
+        htmlEditor.classList.add('hidden');
+        
+        // Sync HTML content to CKEditor
+        if (ckEditorInstance) {
+            const htmlContent = htmlCodeEditor.value;
+            ckEditorInstance.setData(htmlContent);
+            document.getElementById('description').value = htmlContent;
+        }
+    });
+
+    // Toggle to HTML Code mode
+    htmlModeBtn.addEventListener('click', function() {
+        htmlModeBtn.classList.add('btn-primary');
+        htmlModeBtn.classList.remove('btn-ghost');
+        visualModeBtn.classList.remove('btn-primary');
+        visualModeBtn.classList.add('btn-ghost');
+        
+        htmlEditor.classList.remove('hidden');
+        visualEditor.classList.add('hidden');
+        
+        // Sync CKEditor content to HTML textarea
+        if (ckEditorInstance) {
+            const editorContent = ckEditorInstance.getData();
+            htmlCodeEditor.value = editorContent;
+        }
+    });
+
+    // Update hidden textarea when HTML editor content changes
+    htmlCodeEditor.addEventListener('input', function() {
+        document.getElementById('description').value = this.value;
+    });
 
     // Highlight Events Autocomplete
     const searchInput = document.getElementById('highlightEventsSearch');
@@ -605,10 +681,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Before form submission, make sure CKEditor content is saved to the textarea
+    // Before form submission, make sure content from active editor is saved to the textarea
     document.querySelector('form').addEventListener('submit', function() {
-        if (window.descriptionEditor) {
-            const content = window.descriptionEditor.getData();
+        if (!htmlEditor.classList.contains('hidden')) {
+            // If HTML editor is active, use its content
+            document.getElementById('description').value = htmlCodeEditor.value;
+        } else if (ckEditorInstance) {
+            // If CKEditor is active, use its content
+            const content = ckEditorInstance.getData();
             document.getElementById('description').value = content;
         }
     });

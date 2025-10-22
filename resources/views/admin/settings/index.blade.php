@@ -26,15 +26,15 @@
         <div class="card-body p-0">
             <!-- Tabs -->
             <div class="tabs tabs-boxed bg-base-200 border-b">
-                <a href="#general" class="tab tab-active flex items-center gap-2" onclick="switchTab('general', this)">
+                <a href="#general" class="tab tab-active bg-orange-600 hover:bg-orange-700 text-white flex items-center gap-2" onclick="switchTab('general', this)">
                     <i class="fas fa-building"></i>
                     Umum
                 </a>
-                <a href="#seo" class="tab flex items-center gap-2" onclick="switchTab('seo', this)">
+                <a href="#seo" class="tab flex items-center gap-2 text-gray-600" onclick="switchTab('seo', this)">
                     <i class="fas fa-search"></i>
                     SEO
                 </a>
-                <a href="#homepage" class="tab flex items-center gap-2" onclick="switchTab('homepage', this)">
+                <a href="#homepage" class="tab flex items-center gap-2 text-gray-600" onclick="switchTab('homepage', this)">
                     <i class="fas fa-home"></i>
                     Homepage
                 </a>
@@ -536,6 +536,26 @@
 .tab-content.hidden {
     display: none;
 }
+
+/* Custom tab styling to ensure orange color is applied */
+.tab.bg-orange-600 {
+    background-color: rgb(221, 107, 32) !important;
+    color: white !important;
+}
+
+.tab.bg-orange-600:hover {
+    background-color: rgb(194, 65, 12) !important;
+}
+
+.tab.text-gray-600 {
+    color: rgb(75, 85, 99) !important;
+}
+
+/* Ensure tab-active class doesn't override our custom styling */
+.tab.tab-active:not(.bg-orange-600) {
+    background-color: rgb(221, 107, 32) !important;
+    color: white !important;
+}
 </style>
 
 <script>
@@ -658,6 +678,8 @@ function switchTab(tabName, tabElement) {
     // Remove active class from all tabs
     document.querySelectorAll('.tab').forEach(tab => {
         tab.classList.remove('tab-active');
+        tab.classList.remove('bg-orange-600', 'hover:bg-orange-700', 'text-white');
+        tab.classList.add('text-gray-600');
     });
     
     // Show selected tab
@@ -668,7 +690,8 @@ function switchTab(tabName, tabElement) {
     
     // Add active class to selected tab
     if (tabElement) {
-        tabElement.classList.add('tab-active');
+        tabElement.classList.add('tab-active', 'bg-orange-600', 'hover:bg-orange-700', 'text-white');
+        tabElement.classList.remove('text-gray-600');
     }
     
     // Update URL hash

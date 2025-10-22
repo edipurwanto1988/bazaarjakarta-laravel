@@ -102,12 +102,37 @@
                             Description
                         </span>
                     </label>
-                    <div id="description-editor">
-                        <textarea name="description"
-                                  id="description"
-                                  class="hidden"
-                                  placeholder="Describe the event...">{{ old('description', $event->description) }}</textarea>
+                    
+                    <!-- Editor Mode Toggle -->
+                    <div class="btn-group mb-2">
+                        <button type="button" id="visualModeBtn" class="btn btn-sm btn-primary">
+                            <i class="fas fa-eye mr-1"></i> Visual
+                        </button>
+                        <button type="button" id="htmlModeBtn" class="btn btn-sm">
+                            <i class="fas fa-code mr-1"></i> HTML Code
+                        </button>
                     </div>
+                    
+                    <!-- Visual Editor -->
+                    <div id="visualEditor">
+                        <div id="description-editor">
+                            <textarea name="description"
+                                      id="description"
+                                      class="hidden"
+                                      placeholder="Describe the event...">{{ old('description', $event->description) }}</textarea>
+                        </div>
+                    </div>
+                    
+                    <!-- HTML Code Editor -->
+                    <div id="htmlEditor" class="hidden">
+                        <textarea id="htmlCodeEditor"
+                                  class="textarea textarea-bordered w-full h-64 font-mono text-sm"
+                                  placeholder="Enter HTML code...">{{ old('description', $event->description) }}</textarea>
+                    </div>
+                    
+                    <label class="label">
+                        <span class="label-text-alt text-xs">Optional: Detailed description of the event with rich text formatting</span>
+                    </label>
                     @error('description')
                     <label class="label">
                         <span class="label-text-alt text-error flex items-center gap-1">
@@ -492,6 +517,233 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     });
+
+    // Editor mode toggle functionality
+    const visualModeBtn = document.getElementById('visualModeBtn');
+    const htmlModeBtn = document.getElementById('htmlModeBtn');
+    const visualEditor = document.getElementById('visualEditor');
+    const htmlEditor = document.getElementById('htmlEditor');
+    const htmlCodeEditor = document.getElementById('htmlCodeEditor');
+    let ckEditorInstance = null;
+
+    // Initialize CKEditor for description
+    ClassicEditor
+        .create(document.querySelector('#description-editor'), {
+            toolbar: [
+                'heading', '|',
+                'bold', 'italic', 'link', 'bulletedList', 'numberedList', '|',
+                'outdent', 'indent', '|',
+                'imageUpload', 'blockQuote', 'insertTable', 'mediaEmbed', '|',
+                'undo', 'redo'
+            ],
+            placeholder: 'Describe the event...',
+            height: 200
+        })
+        .then(editor => {
+            // Store the editor instance
+            ckEditorInstance = editor;
+            window.descriptionEditor = editor;
+            
+            // Set initial content
+            const initialContent = document.getElementById('description').value;
+            if (initialContent) {
+                editor.setData(initialContent);
+                htmlCodeEditor.value = initialContent;
+            }
+            
+            // Update the hidden textarea and HTML editor when content changes
+            editor.model.document.on('change:data', () => {
+                const content = editor.getData();
+                document.getElementById('description').value = content;
+                htmlCodeEditor.value = content;
+            });
+        })
+        .catch(error => {
+            console.error(error);
+        });
+
+    // Toggle to Visual mode
+    visualModeBtn.addEventListener('click', function() {
+        visualModeBtn.classList.add('btn-primary');
+        visualModeBtn.classList.remove('btn-ghost');
+        htmlModeBtn.classList.remove('btn-primary');
+        htmlModeBtn.classList.add('btn-ghost');
+        
+        visualEditor.classList.remove('hidden');
+        htmlEditor.classList.add('hidden');
+        
+        // Sync HTML content to CKEditor
+        if (ckEditorInstance) {
+            const htmlContent = htmlCodeEditor.value;
+            ckEditorInstance.setData(htmlContent);
+            document.getElementById('description').value = htmlContent;
+        }
+    });
+
+    // Toggle to HTML Code mode
+    htmlModeBtn.addEventListener('click', function() {
+        htmlModeBtn.classList.add('btn-primary');
+        htmlModeBtn.classList.remove('btn-ghost');
+        visualModeBtn.classList.remove('btn-primary');
+        visualModeBtn.classList.add('btn-ghost');
+        
+        htmlEditor.classList.remove('hidden');
+        visualEditor.classList.add('hidden');
+        
+        // Sync CKEditor content to HTML textarea
+        if (ckEditorInstance) {
+            const editorContent = ckEditorInstance.getData();
+            htmlCodeEditor.value = editorContent;
+        }
+    });
+
+    // Update hidden textarea when HTML editor content changes
+    htmlCodeEditor.addEventListener('input', function() {
+        document.getElementById('description').value = this.value;
+    });
+
+    // Highlight Events Autocomplete
+    const searchInput = document.getElementById('highlightEventsSearch');
+    const dropdown = document.getElementById('highlightEventsDropdown');
+    const selectedContainer = document.getElementById('selectedHighlightEvents');
+    const hiddenInput = document.getElementById('highlightEventsIds');
+    const items = document.querySelectorAll('.highlight-event-item');
+    let selectedIds = [];
+    
+    // Toggle dropdown on input focus (only show when typing 3+ characters)
+    searchInput.addEventListener('focus', function() {
+        if (searchInput.value.length >= 3) {
+            dropdown.classList.remove('hidden');
+            filterItems();
+        }
+    });
+    
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!document.getElementById('highlightEventsInput').contains(e.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+    
+    // Filter items based on search (only show when typing 3+ characters)
+    searchInput.addEventListener('input', function() {
+        if (searchInput.value.length >= 3) {
+            dropdown.classList.remove('hidden');
+            filterItems();
+        } else {
+            dropdown.classList.add('hidden');
+        }
+    });
+    
+    function filterItems() {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        items.forEach(item => {
+            const name = item.dataset.name.toLowerCase();
+            if (name.includes(searchTerm)) {
+                item.style.display = 'flex';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+    
+    // Handle item selection
+    items.forEach(item => {
+        item.addEventListener('click', function() {
+            const id = this.dataset.id;
+            const name = this.dataset.name;
+            const icon = this.querySelector('i')?.className || 'fas fa-star';
+            
+            if (selectedIds.includes(id)) {
+                // Remove if already selected
+                selectedIds = selectedIds.filter(item => item !== id);
+                updateSelectedDisplay();
+            } else {
+                // Add to selected
+                selectedIds.push(id);
+                addSelectedDisplay(id, name, icon);
+            }
+            
+            // Update hidden input
+            hiddenInput.value = selectedIds.join(',');
+            
+            // Clear search
+            searchInput.value = '';
+            dropdown.classList.add('hidden');
+            
+            // Keep focus
+            searchInput.focus();
+        });
+    });
+    
+    function addSelectedDisplay(id, name, icon) {
+        const badge = document.createElement('div');
+        badge.className = 'badge badge-primary badge-sm badge-selected flex items-center gap-1';
+        badge.dataset.id = id;
+        
+        badge.innerHTML = `
+            <i class="${icon} text-xs"></i>
+            <span>${name}</span>
+            <button type="button" class="ml-1 text-white hover:text-red-200">
+                <i class="fas fa-times text-xs"></i>
+            </button>
+        `;
+        
+        // Add remove functionality
+        badge.querySelector('button').addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            selectedIds = selectedIds.filter(item => item !== id);
+            badge.remove();
+            hiddenInput.value = selectedIds.join(',');
+        });
+        
+        selectedContainer.appendChild(badge);
+    }
+    
+    function updateSelectedDisplay() {
+        selectedContainer.innerHTML = '';
+        items.forEach(item => {
+            const id = item.dataset.id;
+            const name = item.dataset.name;
+            const icon = item.querySelector('i')?.className || 'fas fa-star';
+            
+            if (selectedIds.includes(id)) {
+                addSelectedDisplay(id, name, icon);
+            }
+        });
+    }
+    
+    // Load existing highlight events for edit mode
+    function loadExistingHighlightEvents() {
+        @if($event->highlightEvents->count() > 0)
+            @foreach($event->highlightEvents as $highlightEvent)
+                selectedIds.push('{{ $highlightEvent->id }}');
+                addSelectedDisplay(
+                    '{{ $highlightEvent->id }}',
+                    '{{ $highlightEvent->name }}',
+                    '{{ $highlightEvent->icon ?? 'fas fa-star' }}'
+                );
+            @endforeach
+            hiddenInput.value = selectedIds.join(',');
+        @endif
+    }
+    
+    // Before form submission, make sure content from active editor is saved to the textarea
+    document.querySelector('form').addEventListener('submit', function() {
+        if (!htmlEditor.classList.contains('hidden')) {
+            // If HTML editor is active, use its content
+            document.getElementById('description').value = htmlCodeEditor.value;
+        } else if (ckEditorInstance) {
+            // If CKEditor is active, use its content
+            const content = ckEditorInstance.getData();
+            document.getElementById('description').value = content;
+        }
+    });
+    
+    // Load existing highlight events on page load
+    loadExistingHighlightEvents();
 });
 </script>
 @endpush

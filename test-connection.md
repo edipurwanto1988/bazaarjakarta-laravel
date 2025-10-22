@@ -1,8 +1,7 @@
-# Test Koneksi GitHub
+# Test Connection File
 
-File ini dibuat untuk menguji koneksi GitHub dengan username: edipurwanto1988
+This file is created to test the Git connection and push functionality.
 
-Tanggal: 2025-10-22
-Waktu: 07:27 UTC
-
-Jika file ini muncul di repository GitHub, berarti koneksi berhasil!
+Date: 2025-10-22
+Time: 10:31 UTC
+User: Testing Git Connection

@@ -564,9 +564,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle to Visual mode
     visualModeBtn.addEventListener('click', function() {
-        visualModeBtn.classList.add('btn-primary');
+        visualModeBtn.classList.add('bg-orange-700', 'text-white', 'border-orange-700');
         visualModeBtn.classList.remove('btn-ghost');
-        htmlModeBtn.classList.remove('btn-primary');
+        htmlModeBtn.classList.remove('bg-orange-700', 'text-white', 'border-orange-700');
         htmlModeBtn.classList.add('btn-ghost');
         
         visualEditor.classList.remove('hidden');
@@ -582,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle to HTML Code mode
     htmlModeBtn.addEventListener('click', function() {
-        htmlModeBtn.classList.add('btn-primary');
+        htmlModeBtn.classList.add('bg-orange-700', 'text-white', 'border-orange-700');
         htmlModeBtn.classList.remove('btn-ghost');
         visualModeBtn.classList.remove('btn-primary');
         visualModeBtn.classList.add('btn-ghost');

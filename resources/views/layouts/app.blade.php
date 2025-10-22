@@ -229,7 +229,7 @@
               </li>
               <li class="flex items-center gap-2">
                 <i class="fas fa-phone text-yellow-200"></i>
-                <span>+62 21 1234 5678</span>
+                <span>{{ \App\Models\Setting::getValue('phone_number', '+62 21 1234 5678') }}</span>
               </li>
               <li class="flex items-center gap-2">
                 <i class="fas fa-envelope text-yellow-200"></i>

@@ -172,13 +172,6 @@
                   </div>
                 </div>
                 @endif
-                <div class="flex items-start gap-3">
-                  <i class="fas fa-ticket-alt text-orange-500 mt-1"></i>
-                  <div>
-                    <p class="font-semibold">Status</p>
-                    <p class="text-sm text-gray-600">{{ ucfirst($event->status) }}</p>
-                  </div>
-                </div>
               </div>
               
               <div class="mt-6 space-y-3">
@@ -198,15 +191,31 @@
               <div class="space-y-3">
                 <div class="flex items-center gap-3">
                   <i class="fas fa-phone text-orange-500"></i>
-                  <p class="text-sm">+62 21 1234 5678</p>
+                  <p class="text-sm">{{ $contactPhone }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                   <i class="fas fa-envelope text-orange-500"></i>
-                  <p class="text-sm">info@pekan-nusantara.id</p>
+                  <p class="text-sm">{{ $contactEmail }}</p>
                 </div>
+                @php
+                    $instagramUsername = '@pekan_nusantara';
+                    $instagramUrl = '#';
+                    
+                    if ($instagram) {
+                        if (str_starts_with($instagram, 'https://instagram.com/')) {
+                            $instagramUsername = '@' . str_replace('https://instagram.com/', '', $instagram);
+                            $instagramUrl = $instagram;
+                        } else {
+                            $instagramUsername = '@' . $instagram;
+                            $instagramUrl = 'https://instagram.com/' . $instagram;
+                        }
+                    }
+                @endphp
                 <div class="flex items-center gap-3">
                   <i class="fab fa-instagram text-orange-500"></i>
-                  <p class="text-sm">@pekan_nusantara</p>
+                  <a href="{{ $instagramUrl }}" target="_blank" class="text-sm hover:text-orange-600 transition-colors">
+                    {{ $instagramUsername }}
+                  </a>
                 </div>
               </div>
             </div>

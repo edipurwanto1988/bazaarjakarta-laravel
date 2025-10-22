@@ -96,15 +96,18 @@ class HomeController extends Controller
                     ->get();
             }
             
-            // Get WhatsApp number from settings
+            // Get contact information from settings
             $whatsappNumber = Setting::getValue('whatsapp_number', '+628123456789');
+            $contactPhone = Setting::getValue('phone', '+62 21 1234 5678');
+            $contactEmail = Setting::getValue('email', 'info@pekan-nusantara.id');
+            $instagram = Setting::getValue('instagram', 'pekan_nusantara');
             
             // Prepare meta data for event
             $title = $event->meta_title ?? $event->title;
             $metaDescription = $event->meta_description ?? Str::limit(strip_tags($event->description), 160);
             $metaKeywords = $event->meta_keywords;
             
-            return compact('event', 'relatedEvents', 'whatsappNumber', 'title', 'metaDescription', 'metaKeywords');
+            return compact('event', 'relatedEvents', 'whatsappNumber', 'contactPhone', 'contactEmail', 'instagram', 'title', 'metaDescription', 'metaKeywords');
         });
         
         return view('event-detail', $data);

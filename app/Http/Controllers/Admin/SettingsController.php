@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Menu;
 use App\Models\Setting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -323,5 +324,40 @@ class SettingsController extends BaseAdminController
             'success' => true,
             'message' => ucfirst($category) . ' settings updated successfully.'
         ]);
+    }
+    
+    /**
+     * Clear application cache.
+     */
+    public function clearCache(Request $request)
+    {
+        try {
+            // Clear application cache
+            Artisan::call('cache:clear');
+            
+            // Clear configuration cache
+            Artisan::call('config:clear');
+            
+            // Clear view cache
+            Artisan::call('view:clear');
+            
+            // Clear route cache
+            Artisan::call('route:clear');
+            
+            // Log the cache clear action
+            Log::info('Application cache cleared by admin user');
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Application cache cleared successfully. All caches have been refreshed.'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to clear cache: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to clear cache. Please try again later.'
+            ], 500);
+        }
     }
 }

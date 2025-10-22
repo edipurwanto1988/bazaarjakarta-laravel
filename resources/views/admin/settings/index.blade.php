@@ -251,8 +251,15 @@
                         </div>
                     </div>
 
-                    <!-- General Tab Save Button -->
-                    <div class="card-actions justify-end mt-6">
+                    <!-- General Tab Actions -->
+                    <div class="card-actions justify-between mt-6">
+                        <!-- Clear Cache Button -->
+                        <button type="button" class="btn bg-red-600 hover:bg-red-700 text-white border-none" onclick="showClearCacheModal()">
+                            <i class="fas fa-trash-alt mr-2"></i>
+                            <span>Clear Cache</span>
+                        </button>
+                        
+                        <!-- Save Button -->
                         <button type="submit" class="btn bg-orange-600 hover:bg-orange-700 text-white border-none" id="general-save-btn">
                             <i class="fas fa-save mr-2"></i>
                             <span>Simpan Pengaturan Umum</span>
@@ -490,6 +497,38 @@
     </div>
 </div>
 
+<!-- Clear Cache Confirmation Modal -->
+<div id="clearCacheModal" class="modal">
+    <div class="modal-box">
+        <div class="flex items-center gap-3 mb-4">
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <div>
+                <h3 class="font-bold text-lg">Clear Application Cache</h3>
+                <p class="text-sm text-gray-600">This action will clear all application cache</p>
+            </div>
+        </div>
+        
+        <div class="py-4">
+            <p class="text-sm">Are you sure you want to clear the application cache? This will:</p>
+            <ul class="list-disc list-inside mt-2 text-sm text-gray-600">
+                <li>Clear all cached data</li>
+                <li>Refresh configuration settings</li>
+                <li>May temporarily slow down the website</li>
+            </ul>
+        </div>
+        
+        <div class="modal-action">
+            <button type="button" class="btn btn-ghost" onclick="closeClearCacheModal()">Cancel</button>
+            <button type="button" class="btn bg-red-600 hover:bg-red-700 text-white border-none" id="clearCacheBtn">
+                <i class="fas fa-trash-alt mr-2"></i>
+                Clear Cache
+            </button>
+        </div>
+    </div>
+</div>
+
 <style>
 .tab-content {
     display: block;
@@ -655,6 +694,63 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+});
+
+// Clear Cache Modal Functions
+function showClearCacheModal() {
+    const modal = document.getElementById('clearCacheModal');
+    modal.classList.add('modal-open');
+}
+
+function closeClearCacheModal() {
+    const modal = document.getElementById('clearCacheModal');
+    modal.classList.remove('modal-open');
+}
+
+// Handle Clear Cache Button Click
+document.addEventListener('DOMContentLoaded', function() {
+    const clearCacheBtn = document.getElementById('clearCacheBtn');
+    
+    if (clearCacheBtn) {
+        clearCacheBtn.addEventListener('click', function() {
+            // Show loading state
+            const originalContent = this.innerHTML;
+            this.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Clearing...';
+            this.disabled = true;
+            
+            // Send AJAX request to clear cache
+            fetch('/admin/settings/clear-cache', {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || document.querySelector('input[name="_token"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Close modal
+                    closeClearCacheModal();
+                    // Show success notification
+                    showNotification(data.message, 'success');
+                } else {
+                    // Show error notification
+                    showNotification(data.message || 'Failed to clear cache.', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('An error occurred while clearing cache.', 'error');
+            })
+            .finally(() => {
+                // Restore button state
+                this.innerHTML = originalContent;
+                this.disabled = false;
+            });
+        });
+    }
 });
 </script>
 @endsection

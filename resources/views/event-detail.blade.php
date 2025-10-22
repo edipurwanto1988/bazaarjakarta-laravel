@@ -191,23 +191,24 @@
               <div class="space-y-3">
                 <div class="flex items-center gap-3">
                   <i class="fas fa-phone text-orange-500"></i>
-                  <p class="text-sm">{{ $contactPhone }}</p>
+                  <p class="text-sm">{{ \App\Models\Setting::getValue('phone', '+62 21 1234 5678') }}</p>
                 </div>
                 <div class="flex items-center gap-3">
                   <i class="fas fa-envelope text-orange-500"></i>
-                  <p class="text-sm">{{ $contactEmail }}</p>
+                  <p class="text-sm">{{ \App\Models\Setting::getValue('email', 'info@pekan-nusantara.id') }}</p>
                 </div>
                 @php
+                    $instagramSetting = \App\Models\Setting::getValue('instagram', 'pekan_nusantara');
                     $instagramUsername = '@pekan_nusantara';
                     $instagramUrl = '#';
                     
-                    if ($instagram) {
-                        if (str_starts_with($instagram, 'https://instagram.com/')) {
-                            $instagramUsername = '@' . str_replace('https://instagram.com/', '', $instagram);
-                            $instagramUrl = $instagram;
+                    if ($instagramSetting) {
+                        if (str_starts_with($instagramSetting, 'https://instagram.com/')) {
+                            $instagramUsername = '@' . str_replace('https://instagram.com/', '', $instagramSetting);
+                            $instagramUrl = $instagramSetting;
                         } else {
-                            $instagramUsername = '@' . $instagram;
-                            $instagramUrl = 'https://instagram.com/' . $instagram;
+                            $instagramUsername = '@' . $instagramSetting;
+                            $instagramUrl = 'https://instagram.com/' . $instagramSetting;
                         }
                     }
                 @endphp

@@ -40,6 +40,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
     Route::post('/settings/general', [App\Http\Controllers\Admin\SettingsController::class, 'updateGeneral'])->name('admin.settings.update.general');
     Route::post('/settings/seo', [App\Http\Controllers\Admin\SettingsController::class, 'updateSeo'])->name('admin.settings.update.seo');
     Route::post('/settings/homepage', [App\Http\Controllers\Admin\SettingsController::class, 'updateHomepage'])->name('admin.settings.update.homepage');
+    Route::post('/settings/clear-cache', [App\Http\Controllers\Admin\SettingsController::class, 'clearCache'])->name('admin.settings.clear.cache');
     
     // Menu Management Routes
     Route::get('/menus', [App\Http\Controllers\Admin\MenuController::class, 'index'])->name('admin.menus.index');
